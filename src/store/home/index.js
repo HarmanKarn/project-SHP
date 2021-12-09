@@ -1,4 +1,4 @@
-import { reqCategoryList } from "@/api";
+import { reqCategoryList,reqGetBannerList } from "@/api";
 
 //Home模块小仓库
 
@@ -6,12 +6,16 @@ import { reqCategoryList } from "@/api";
 const state = {
     //state中数据默认初始值别瞎写,服务器返回的对象，服务器返回数组,[根据接口返回值初始化的]
     categoryList:[],
+    bannerList:[]
 };
 
 //mutations:修改state的唯一手段
 const mutations = {
     CATEGORYLIST(state,categoryList){
         state.categoryList = categoryList
+    },
+    GETBANNERLIST(state,bannerList){
+        state.bannerList = bannerList
     }
 };
 
@@ -25,7 +29,13 @@ const actions = {
         if(result.code === 200){
             commit("CATEGORYLIST",result.data);
         }
+    },
 
+    async getBannerList({commit}){
+        let result = await reqGetBannerList();
+        if(result.code === 200){
+            commit("GETBANNERLIST",result.data);
+        }
     }
 };
 

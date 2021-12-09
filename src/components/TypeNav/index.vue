@@ -1,32 +1,42 @@
 <template>
   <!-- 商品分类导航 -->
-  <div class="type-nav">
+  <div class="type-nav"> 
     <div class="container">
-      <div  @mouseleave="leaveIndex">
+      <!--事件委派|事件代理-->
+      <div  @mouseleave="leaveShow" @mouseenter="enterShow">
         <h2 class="all">全部商品分类</h2>
-        <div class="sort">
-          <div class="all-sort-list2">
-            <div class="item" v-for="(c1,index) in categoryList" :key="c1.categoryId" :class="{cur:currentIndex==index}">
-              <h3 @mouseenter="changeIndex(index)">
-                <a href="">{{c1.categoryName}}</a>
-              </h3>
-              <div class="item-list clearfix">
-                <div class="subitem" v-for="(c2,index) in c1.categoryChild" :key="c2.categoryId">
-                  <dl class="fore">
-                    <dt>
-                      <a href="">{{c2.categoryName}}</a>
-                    </dt>
-                    <dd>
-                      <em v-for="(c3,index) in c2.categoryChild" :key="c3.categoryId">
-                        <a href="">{{c3.categoryName}}</a>
-                      </em>
-                    </dd>
-                  </dl>
+        <!--过渡动画-->
+        <transition name="sort">
+          <!--三级联动-->
+          <div class="sort" v-show="show">
+            <!--利用事件委派+编程式导航实现路由跳转与传递参数-->
+            <div class="all-sort-list2" @click="goSearch">
+              <!--一级分类-->
+              <div class="item" v-for="(c1,index) in categoryList" :key="c1.categoryId" :class="{cur:currentIndex==index}">
+                <h3 @mouseenter="changeIndex(index)">
+                  <!--自定义属性-->
+                  <a :data-categoryName="c1.categoryName" :data-category1Id="c1.categoryId">{{c1.categoryName}}</a>
+                </h3>
+                <!--二级分类-->
+                <div class="item-list clearfix" :style="{display:currentIndex==index?'block':'none'}">
+                  <div class="subitem" v-for="(c2,index) in c1.categoryChild" :key="c2.categoryId">
+                    <dl class="fore">
+                      <dt>
+                        <a :data-categoryName="c2.categoryName" :data-category2Id="c2.categoryId">{{c2.categoryName}}</a>
+                      </dt>
+                      <!--三级分类-->
+                      <dd>
+                        <em v-for="(c3,index) in c2.categoryChild" :key="c3.categoryId">
+                          <a :data-categoryName="c3.categoryName" :data-category3Id="c3.categoryId">{{c3.categoryName}}</a>
+                        </em>
+                      </dd>
+                    </dl>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </transition>
       </div>
       <nav class="nav">
         <a href="###">服装城</a>
@@ -44,18 +54,25 @@
 
 <script>
 import {mapState} from 'vuex';
+//按需引入:引入lodash下的节流函数
+import throttle from 'lodash/throttle';
+
 export default {
   name: "TypeNav",
   data(){
     return{
       //存储用户鼠标移上哪一个一级分类
-      currentIndex:-1
+      currentIndex:-1,
+      show:true
     }
   },
   //组件挂在完毕:可以向服务器发请求
   mounted(){
-    //通知Vuex发请求,获取数据,存储于仓库当中
-    this.$store.dispatch('categoryList')
+    //当组件挂载完毕,让show属性变为false
+    //如果不是Home路由组件,将typeNav进行隐藏
+    if(this.$route.path!="/home"){
+      this.show = false;
+    }
   },
   computed:{
     ...mapState({
@@ -71,13 +88,70 @@ export default {
   },
   methods:{
     //鼠标进入修改响应式数据currentIndex属性
-    changeIndex(index){
-      //index:鼠标移动到某一个一级分类的元素的索引值
+    // changeIndex(index){
+    //   //index:鼠标移动到某一个一级分类的元素的索引值
+    //   this.currentIndex = index
+    // },
+
+    //es5写法调用节流函数
+    changeIndex:throttle(function(index){
       this.currentIndex = index
-    },
+    },50),
+
     //一级分类鼠标移出的回调
     leaveIndex(){
       this.currentIndex = -1;
+    },
+
+    //进行路由跳转的方法
+    goSearch(event){
+      /*
+      最好的解决方法:编程式导航+事件委派
+      问题:事件委派,是把全部的子节点[h3,dt,dl,em]的事件委派给父亲节点
+      点击a标签的时候,才会进行路由跳转[怎么能确定点击的一定是a标签]
+      存在另外一个问题:即使知道确定点击的是a标签,如何区分是一级,二级,三级分类的标签
+      */
+      //第一个问题:把子节点当中a标签加上自定义属性data-categoryName,其余的子节点没有
+      let element =event.target;
+      //获取到当前触发这个事件的节点[h3,a,dt,dl],需要带有data-categoryName这样的节点[一定是a标签]
+      //节点有一个属性dataset属性,可以获取节点的自定义属性与属性值
+      let {categoryname,category1id,category2id,category3id} = element.dataset
+      //如果标签身上拥有categoryname一定是a标签
+      if(categoryname){
+        //整理路由跳转的参数
+        let loction = {name:'search'}
+        let query = {categoryName:categoryname};
+        //一级分类,二级分类,三级分类的a标签
+        if(category1id){
+          query.category1Id = category1id;
+        }else if(category2id){
+          query.category2Id = category2id;
+        }else{
+          query.category3Id = category3id;
+        }
+        //判断,如果路由跳转的时候,带有params参数,传递过去
+        if(this.$route.params){
+          loction.params = this.$route.params;
+          //动态给location配置对象添加query属性
+          loction.query = query;
+          //路由跳转
+          this.$router.push(loction);
+        }
+      }
+   
+    },
+
+    //当鼠标移入的时候,让商品分类列表进行展示
+    enterShow(){
+      this.show = true;
+    },
+
+    //当鼠标移出的时候,让商品分类列表进行隐藏
+    leaveShow(){
+      this.currentIndex = -1;
+      if(this.$route.path != '/home'){
+        this.show = false;
+      }
     }
   }
 };
@@ -123,7 +197,7 @@ export default {
       position: absolute;
       background: #fafafa;
       z-index: 999;
-
+      
       .all-sort-list2 {
         .item {
           h3 {
@@ -193,17 +267,36 @@ export default {
             }
           }
 
-          &:hover {
-            .item-list {
-              display: block;
-            }
-          }
         }
 
         .cur{
           background:skyblue
         }
       }
+    }
+
+    //过渡动画的样式
+    //过渡动画开始状态(进入)
+    .sort-enter{
+      height:0px;
+    }
+    //过渡动画结束状态(进入)
+    .sort-enter-to{
+      height:461px;
+    }
+    //定义动画时间,速度
+    .sort-enter-active{
+      transition:all .5s linear;
+    }
+    //过渡动画离开开始状态
+    .sort-leave{
+      height:461px;
+    }
+    .sort-leave-to{
+      height:0px;
+    }
+    .sort-leave-active{
+      transition:all .5s linear;
     }
   }
 }

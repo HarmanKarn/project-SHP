@@ -28,7 +28,7 @@
             <!--头部第二行 搜索区域-->
             <div class="bottom">
                 <h1 class="logoArea">
-                    <router-link class="logo" to="home">
+                    <router-link class="logo" to="/home">
                         <img src="./images/logo.png" alt="">
                     </router-link>
                 </h1>
@@ -63,7 +63,15 @@
                 //3.对象
                 // this.$router.push({name:"search",params:{keyword:this.keyword},query:{k:this.keyword.toUpperCase()}})
 
-                this.$router.push({name:"search",query:{k:this.keyword.toUpperCase()}})
+                //代表的是如果有query参数也带过去
+                if(this.$route.query){
+                    let loction = {
+                        name:"search",
+                        params:{keyword:this.keyword || undefined}
+                    };
+                    loction.query = this.$route.query;
+                    this.$router.push(loction);
+                }   
                 
             }
         }
