@@ -193,7 +193,7 @@ export default {
       left: 0;
       top: 45px;
       width: 210px;
-      height: 461px;
+      height: 521px;
       position: absolute;
       background: #fafafa;
       z-index: 999;
@@ -282,22 +282,14 @@ export default {
     }
     //过渡动画结束状态(进入)
     .sort-enter-to{
-      height:461px;
+      height:521px;
     }
     //定义动画时间,速度
     .sort-enter-active{
-      transition:all .5s linear;
+      transition:all .1s linear;
     }
-    //过渡动画离开开始状态
-    .sort-leave{
-      height:461px;
-    }
-    .sort-leave-to{
-      height:0px;
-    }
-    .sort-leave-active{
-      transition:all .5s linear;
-    }
+
+
   }
 }
 </style>

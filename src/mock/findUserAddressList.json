@@ -1,0 +1,30 @@
+[
+    {
+        "id":1361,
+        "userAddress":"广东省深圳市龙华区民治",
+        "userId":2,
+        "provinceId":1,
+        "consignee":"htt"
+    },
+    {
+        "id":1362,
+        "userAddress":"山东省菏泽市高新区民治",
+        "userId":2,
+        "provinceId":1,
+        "consignee":"SS"
+    },
+    {
+        "id":1363,
+        "userAddress":"广东省深圳市保安区后瑞",
+        "userId":2,
+        "provinceId":24,
+        "consignee":"DD"
+    },
+    {
+        "id":1364,
+        "userAddress":"广东省深圳市平湖区华南",
+        "userId":2,
+        "provinceId":26,
+        "consignee":"TG"
+    }
+]

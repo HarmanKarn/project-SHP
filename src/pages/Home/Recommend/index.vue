@@ -37,7 +37,7 @@ export default {
         .py-container {
             width: 1200px;
             margin: 0 auto;
-
+            padding-top:60px;
             .recommend {
                 height: 165px;
                 background-color: #eaeaea;
