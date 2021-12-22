@@ -71,7 +71,10 @@ export const reqUserInfo = ()=>request({url:'/user/passport/auth/getUserInfo',me
 export const reqLogOut = ()=>request({url:'/user/passport/logout',method:'get'})
 
 //获取用户地址信息
-export const reqAddressInfo = ()=>request({url:'/user/userAddress/auth/findUserAddressList',method:'get'})
+export const reqAddressInfo = ()=>request({url:'/user/userAddress/auth/findUserAddressList',method:'get'});
 
 //获取订单交易页信息
 export const reqOrderInfo = ()=>request({url:'/order/auth/trade',method:'get'})
+
+//
+export const reqSubmitOrder = (tradeNo,data)=>request({url:`/order/auth/submitOrder?tradeNo=${tradeNo}`,data,method:'post'})

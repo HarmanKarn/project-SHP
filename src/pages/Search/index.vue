@@ -66,7 +66,7 @@
                     <i class="command">已有<span>2000</span>人评价</i>
                   </div>
                   <div class="operate">
-                    <a href="success-cart.html" target="_blank" class="sui-btn btn-bordered btn-danger">加入购物车</a>
+                    <a href="#" class="sui-btn btn-bordered btn-danger">加入购物车</a>
                     <a href="javascript:void(0);" class="sui-btn btn-bordered">收藏</a>
                   </div>
                 </div>
@@ -255,7 +255,8 @@
         //整理带给服务器参数
         this.searchParams.pageNo = pageNo;
         this.getData()
-      }
+      },
+
     },
 
     //数据监听:监听组件实例身上的属性的属性值变化

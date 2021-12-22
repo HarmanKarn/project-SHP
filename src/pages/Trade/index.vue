@@ -5,7 +5,7 @@
       <h5 class="receive">收件人信息</h5>
       <div class="address clearFix" v-for="(address,index) in addressInfo" :key="address.id">
         <span class="username" :class="{selected:address.isDefault==1}">{{address.consignee}}</span>
-        <p @click="changeDefault(address,adderssInfo)">
+        <p @click="changeDefault(address,addressInfo)">
           <span class="s1">{{address.fullAddress}}</span>
           <span class="s2">{{address.phoneNum}}</span>
           <span class="s3" v-show="address.isDefault==1">默认地址</span>
@@ -30,40 +30,25 @@
       </div>
       <div class="detail">
         <h5>商品清单</h5>
-        <ul class="list clearFix">
+        <ul class="list clearFix" v-for="(order,index) in orderInfo.detailArrayList" :key="order.skuID"> 
           <li>
-            <img src="./images/goods.png" alt="">
+            <img :src="order.imgUrl" alt="" style="width:100px;height:100px;">
           </li>
           <li>
-            <p>
-              Apple iPhone 6s (A1700) 64G 玫瑰金色 移动联通电信4G手机硅胶透明防摔软壳 本色系列</p>
+            <p>{{order.skuName}}</p>
             <h4>7天无理由退货</h4>
           </li>
           <li>
-            <h3>￥5399.00</h3>
+            <h3>￥{{order.orderPrice}}.00</h3>
           </li>
-          <li>X1</li>
+          <li>X{{order.skuNum}}</li>
           <li>有货</li>
         </ul>
-        <ul class="list clearFix">
-          <li>
-            <img src="./images/goods.png" alt="">
-          </li>
-          <li>
-            <p>
-              Apple iPhone 6s (A1700) 64G 玫瑰金色 移动联通电信4G手机硅胶透明防摔软壳 本色系列</p>
-            <h4>7天无理由退货</h4>
-          </li>
-          <li>
-            <h3>￥5399.00</h3>
-          </li>
-          <li>X1</li>
-          <li>有货</li>
-        </ul>
+
       </div>
       <div class="bbs">
         <h5>买家留言：</h5>
-        <textarea placeholder="建议留言前先与商家沟通确认" class="remarks-cont"></textarea>
+        <textarea placeholder="建议留言前先与商家沟通确认" class="remarks-cont" v-model="msg"></textarea>
 
       </div>
       <div class="line"></div>
@@ -76,8 +61,8 @@
     <div class="money clearFix">
       <ul>
         <li>
-          <b><i>1</i>件商品，总商品金额</b>
-          <span>¥5399.00</span>
+          <b><i>{{orderInfo.totalNum}}</i>件商品，总商品金额</b>
+          <span>¥{{orderInfo.totalAmount}}.00</span>
         </li>
         <li>
           <b>返现：</b>
@@ -90,24 +75,31 @@
       </ul>
     </div>
     <div class="trade">
-      <div class="price">应付金额:　<span>¥5399.00</span></div>
+      <div class="price">应付金额:　<span>¥{{orderInfo.totalAmount}}.00</span></div>
       <div class="receiveInfo">
         寄送至:
-        <span></span>
-        收货人：<span></span>
-        <span></span>
+        <span>{{userDefaultAddress.fullAddress}}</span>
+        收货人：<span>{{userDefaultAddress.consignee}}</span>
+        <span>{{userDefaultAddress.phoneNum}}</span>
       </div>
     </div>
     <div class="sub clearFix">
-      <router-link class="subBtn" to="/pay">提交订单</router-link>
+      <a class="subBtn" @click="submitOrder">提交订单</a>
     </div>
   </div>
 </template>
 
 <script>
 import {mapState} from 'vuex'
+
   export default {
     name: 'Trade',
+    data(){
+      return {
+        msg:'',
+        orderId:''
+      }
+    },
     //生命周期函数:挂载完毕
     mounted(){
       this.$store.dispatch('getUserAddress');
@@ -115,20 +107,44 @@ import {mapState} from 'vuex'
     },
     computed:{
       ...mapState({
-        addressInfo:state => state.trade.addressInfo
+        addressInfo:state => state.trade.addressInfo,
+        orderInfo:state => state.trade.orderInfo
       }),
       //将来提交订单最终选中地址
-      // userDefaultAddress(){
-      //   //find:查找数组当中符合条件的元素返回,作为最终结果
-      //   return this.addressInfo.find(item=>item.isDefault==1);
-      // }
+      userDefaultAddress(){
+        //find:查找数组当中符合条件的元素返回,作为最终结果
+        return this.addressInfo.find(item=>item.isDefault==1) || [];
+      }
     },
-    methods:{
+      methods:{
       //修改默认地址
       changeDefault(address,addressInfo){
-        //全部isDdefault为0
-        addressInfo.forEach(item=>item.isDefault==0);
+        addressInfo.forEach(item => item.isDefault=0);
         address.isDefault = 1;
+      },
+      //提交订单
+      async submitOrder(){
+        //交易编码
+        let {tradeNo} = this.orderInfo
+        //其余的六个参数
+        let data = {
+          consignee:this.userDefaultAddress.consignee,//最终收件人名字
+          consigneeTel:this.userDefaultAddress.phoneNum,//最终收件人手机
+          deliveryAddress:this.userDefaultAddress.fullAddress,//最终收件人地址
+          paymentWay: "ONLINE",//支付方式
+          orderComment:this.msg,//买家留言
+          orderDetailList:this.orderInfo.detailArrayList//商品信息
+        }
+        //需要带参数:tradeNo
+        let result = await this.$API.reqSubmitOrder({tradeNo,data})
+        if(result.code == 200){
+            this.orderId=result.data;
+            //路由跳转+路由传递参数
+            this.$router.push(`/pay?orderId=${this.orderId}`);
+        }else{
+          alert(result.data)
+        }
+
       }
     }
   }

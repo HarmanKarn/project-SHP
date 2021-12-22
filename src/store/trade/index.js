@@ -1,14 +1,15 @@
 import { reqAddressInfo,reqOrderInfo } from "@/api";
 const state = {
-    address:[],
+    addressInfo:[],
     orderInfo:{}
 };
 const mutations = {
-    GETUSERADDRESS(state,address){
-        state.address = address
+    GETUSERADDRESS(state,addressInfo){
+        state.addressInfo = addressInfo
     },
     GETORDERINFO(state,orderInfo){
         state.orderInfo = orderInfo
+        console.log(orderInfo)
     },
 };
 const actions = {
